@@ -6,7 +6,7 @@ export const EN_STRINGS = {
   'empty.search': 'No matching resources found.', 'error.coreOffline': 'Core is offline or unavailable. Start it, check the connection, then retry.',
   'error.load': 'Could not load QDN resources.', 'error.details': 'Could not load resource details.', 'field.query': 'Search QDN',
   'field.service': 'All services', 'label.description': 'Description', 'label.details': 'Resource details', 'label.filename': 'Filename',
-  'label.metadata': 'Metadata', 'label.name': 'Name', 'label.properties': 'Properties', 'label.services': 'Services',
+  'label.metadata': 'Metadata', 'label.name': 'Name', 'label.nameOwner': 'Current name owner', 'label.properties': 'Properties', 'label.services': 'Services',
   'label.status': 'Status', 'label.title': 'Title', 'label.type': 'Type', 'label.unknown': 'Unknown', 'loading': 'Loading…',
   'search.help': 'Search titles, descriptions, and resource fields across public QDN.', 'thumbnail.placeholder': 'Preview unavailable',
   'viewer.download': 'Download resource', 'viewer.binary': 'This resource cannot be rendered safely in Explore.',
