@@ -1,6 +1,6 @@
 export const EN_STRINGS = {
   'app.title': 'Explore', 'app.subtitle': 'Browse public Qortium QDN resources.', 'action.back': 'Back', 'action.download': 'Download',
-  'action.open': 'Open', 'action.openNewTab': 'Open in new tab', 'action.refresh': 'Refresh', 'action.retry': 'Retry',
+  'action.open': 'Open', 'action.openNewTab': 'Open in new tab', 'action.preview': 'Preview local file', 'action.refresh': 'Refresh', 'action.retry': 'Retry',
   'action.search': 'Search', 'action.view': 'View', 'column.count': 'Count', 'column.identifier': 'Identifier',
   'column.size': 'Size', 'column.status': 'Status', 'column.updated': 'Updated', 'empty.resources': 'No resources found.',
   'empty.search': 'No matching resources found.', 'error.coreOffline': 'Core is offline or unavailable. Start it, check the connection, then retry.',
@@ -11,4 +11,5 @@ export const EN_STRINGS = {
   'search.help': 'Search titles, descriptions, and resource fields across public QDN.', 'thumbnail.placeholder': 'Preview unavailable',
   'viewer.download': 'Download resource', 'viewer.binary': 'This resource cannot be rendered safely in Explore.',
   'viewer.empty': 'This resource has no text content.', 'viewer.json': 'JSON', 'viewer.source': 'Source preview',
+  'preview.canceled': 'File selection was canceled.', 'preview.choosing': 'Choosing file…', 'preview.opened': 'Preview opened in Home.',
 } as const;
