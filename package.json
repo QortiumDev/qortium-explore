@@ -1,6 +1,6 @@
 {
   "name": "qortium-explore",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "private": true,
   "license": "0BSD",
   "description": "Browse, search, inspect, and open public Qortium QDN resources.",
