@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ContentViewer } from './contentViewer';
-import { detailRoute, hashForRoute, routeFromHash, type ExploreRoute } from './appRoute';
+import { detailRoute, hashForRoute, routeFromHash, singleResourceDetailRoute, type ExploreRoute } from './appRoute';
 import { applyDisplaySettings, getInitialDisplaySettings, updateFromHostMessage } from './displaySettings';
 import { dispatchOpen } from './dispatcher';
 import { createTranslator } from './i18n';
@@ -35,9 +35,13 @@ export function App() {
   const [details, setDetails] = useState<ResourceDetails | null>(null);
   const t = useMemo(() => createTranslator(display.language), [display.language]);
   const navigate = (next: ExploreRoute) => { window.location.hash = hashForRoute(next); };
+  const replace = (next: ExploreRoute) => {
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hashForRoute(next)}`);
+    setRoute(next);
+  };
   useEffect(() => { const onHash = () => setRoute(routeFromHash(window.location.hash)); window.addEventListener('hashchange', onHash); return () => window.removeEventListener('hashchange', onHash); }, []);
   useEffect(() => { applyDisplaySettings(display); const onMessage = (event: MessageEvent) => setDisplay(current => updateFromHostMessage(event.data, current) ?? current); window.addEventListener('message', onMessage); return () => window.removeEventListener('message', onMessage); }, [display]);
-  useEffect(() => { const request = resourceQuery(route); if (!request) return; let active = true; setLoading(true); setFailure(''); void qdnRequest<unknown>(request).then(value => { if (active) setResources(asResources(value)); }).catch(error => { if (active) setFailure(errorText(error)); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [route, refresh]);
+  useEffect(() => { const request = resourceQuery(route); if (!request) return; let active = true; setLoading(true); setFailure(''); void qdnRequest<unknown>(request).then(value => { if (!active) return; const nextResources = asResources(value); const detail = singleResourceDetailRoute(route, nextResources); if (detail) { replace(detail); return; } setResources(nextResources); }).catch(error => { if (active) setFailure(errorText(error)); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [route, refresh]);
   useEffect(() => { if (route.kind !== 'detail') { setDetails(null); return; } let active = true; const resource = { service: route.service, name: route.name, identifier: route.identifier }; void Promise.all([qdnRequest<Record<string, unknown>>({ action: 'GET_QDN_RESOURCE_METADATA', ...resource }), qdnRequest<Record<string, unknown>>({ action: 'GET_QDN_RESOURCE_STATUS', ...resource }), qdnRequest<Record<string, unknown>>({ action: 'GET_QDN_RESOURCE_PROPERTIES', ...resource })]).then(([metadata, status, properties]) => { if (active) setDetails({ metadata, status: status as ResourceDetails['status'], properties }); }).catch(error => { if (active) setFailure(errorText(error)); }); return () => { active = false; }; }, [route]);
   const folders = useMemo(() => route.kind === 'services' ? groupBy(resources, item => item.service) : route.kind === 'service' ? groupBy(resources, item => item.name) : route.kind === 'name-services' ? groupBy(resources, item => item.service) : [], [resources, route]);
   const shown = searchResults ?? (route.kind === 'resources' ? resources : []);
