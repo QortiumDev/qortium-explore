@@ -30,3 +30,13 @@ export function hashForRoute(route: ExploreRoute) {
 export function detailRoute(resource: QdnResource): ExploreRoute {
   return { kind: 'detail', service: resource.service, name: resource.name, identifier: resource.identifier };
 }
+
+/**
+ * Preserve the old explorer's useful single-result shortcut without handing
+ * control back to Home's resource viewer. Replacing Explore's hash keeps Back
+ * from returning to a one-row listing, while the detail screen still delegates
+ * apps, documents, and media through the normal Home bridge actions.
+ */
+export function singleResourceDetailRoute(route: ExploreRoute, resources: QdnResource[]): ExploreRoute | null {
+  return route.kind === 'resources' && resources.length === 1 ? detailRoute(resources[0]) : null;
+}
