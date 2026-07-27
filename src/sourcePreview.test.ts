@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { QdnRequest } from './qdnRequest';
-import { previewQdnPublishSource, type QdnBridgeRequest } from './sourcePreview';
+import { previewQdnPublishSource, supportsSourcePreview, type QdnBridgeRequest } from './sourcePreview';
 
 describe('previewQdnPublishSource', () => {
+  it('requires both Home source-preview actions', () => {
+    expect(supportsSourcePreview(['SELECT_QDN_PUBLISH_SOURCE', 'PREVIEW_QDN_PUBLISH_SOURCE'])).toBe(true);
+    expect(supportsSourcePreview(['SELECT_QDN_PUBLISH_SOURCE'])).toBe(false);
+    expect(supportsSourcePreview(['PREVIEW_QDN_PUBLISH_SOURCE'])).toBe(false);
+    expect(supportsSourcePreview({ actions: ['SELECT_QDN_PUBLISH_SOURCE', 'PREVIEW_QDN_PUBLISH_SOURCE'] })).toBe(false);
+  });
+
   it("uses Home's opaque selected-source token to open a file preview", async () => {
     const calls: QdnRequest[] = [];
     const request: QdnBridgeRequest = async <T>(input: QdnRequest) => {

@@ -12,6 +12,17 @@ export type SourcePreviewResult =
   | { kind: 'canceled' }
   | { kind: 'opened'; source: SelectedQdnPublishSource };
 
+const SOURCE_PREVIEW_ACTIONS = new Set([
+  'SELECT_QDN_PUBLISH_SOURCE',
+  'PREVIEW_QDN_PUBLISH_SOURCE',
+]);
+
+export function supportsSourcePreview(value: unknown) {
+  if (!Array.isArray(value)) return false;
+  const actions = new Set(value.filter((item): item is string => typeof item === 'string'));
+  return [...SOURCE_PREVIEW_ACTIONS].every((action) => actions.has(action));
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
 }
