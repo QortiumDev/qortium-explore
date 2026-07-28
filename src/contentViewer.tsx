@@ -38,6 +38,20 @@ export function imageMimeType(resource: QdnResource, properties?: Record<string,
 
 function csvRows(text: string) { return text.split(/\r?\n/).filter(Boolean).map(row => row.split(',').map(value => value.trim().replace(/^"|"$/g, ''))); }
 
+/**
+ * Renders already-fetched content. `data` is base64 for images and decoded
+ * text for every other kind, matching what ContentViewer fetches; the Git
+ * viewer feeds it bytes it read out of a repository instead.
+ */
+export function ContentPreview({ kind, data, resource, properties }: { kind: ContentKind; data: string; resource: QdnResource; properties?: Record<string, unknown> }) {
+  if (kind === 'binary') return <p className="viewer-note">This resource cannot be rendered safely in Explore. Use Download to save its original bytes.</p>;
+  if (kind === 'image') return <img className="content-image" alt={filename(resource, properties)} src={`data:${imageMimeType(resource, properties)};base64,${data}`} />;
+  if (kind === 'json') { try { return <pre className="source">{JSON.stringify(JSON.parse(data), null, 2)}</pre>; } catch { return <pre className="source">{data}</pre>; } }
+  if (kind === 'csv') { const rows = csvRows(data); return <div className="table-scroll"><table className="csv"><tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => i === 0 ? <th key={j}>{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table></div>; }
+  if (kind === 'markdown') return <article className="markdown">{data.split(/\r?\n/).map((line, index) => line.startsWith('### ') ? <h3 key={index}>{line.slice(4)}</h3> : line.startsWith('## ') ? <h2 key={index}>{line.slice(3)}</h2> : line.startsWith('# ') ? <h1 key={index}>{line.slice(2)}</h1> : <p key={index}>{line}</p>)}</article>;
+  return <pre className="source">{data}</pre>;
+}
+
 export function ContentViewer({ resource, properties }: { resource: QdnResource; properties?: Record<string, unknown> }) {
   const [state, setState] = useState<{ data?: string; error?: string; loading: boolean }>({ loading: true });
   const kind = classifyContent(resource, properties);
@@ -48,13 +62,8 @@ export function ContentViewer({ resource, properties }: { resource: QdnResource;
     void qdnRequest<unknown>(resourceFetchRequest(resource, { binary: kind === 'image', maxBytes: CONTENT_MAX_BYTES })).then(data => { if (active) setState({ data: toText(data), loading: false }); }).catch(error => { if (active) setState({ error: error instanceof Error ? error.message : 'Unable to fetch content.', loading: false }); });
     return () => { active = false; };
   }, [kind, resource.identifier, resource.name, resource.path, resource.service]);
-  if (kind === 'binary') return <p className="viewer-note">This resource cannot be rendered safely in Explore. Use Download to save its original bytes.</p>;
+  if (kind === 'binary') return <ContentPreview kind={kind} data="" resource={resource} properties={properties} />;
   if (state.loading) return <p className="loading">Loading preview…</p>;
   if (state.error) return <p className="error">{state.error}</p>;
-  const data = state.data || '';
-  if (kind === 'image') return <img className="content-image" alt={filename(resource, properties)} src={`data:${imageMimeType(resource, properties)};base64,${data}`} />;
-  if (kind === 'json') { try { return <pre className="source">{JSON.stringify(JSON.parse(data), null, 2)}</pre>; } catch { return <pre className="source">{data}</pre>; } }
-  if (kind === 'csv') { const rows = csvRows(data); return <div className="table-scroll"><table className="csv"><tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => i === 0 ? <th key={j}>{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table></div>; }
-  if (kind === 'markdown') return <article className="markdown">{data.split(/\r?\n/).map((line, index) => line.startsWith('### ') ? <h3 key={index}>{line.slice(4)}</h3> : line.startsWith('## ') ? <h2 key={index}>{line.slice(3)}</h2> : line.startsWith('# ') ? <h1 key={index}>{line.slice(2)}</h1> : <p key={index}>{line}</p>)}</article>;
-  return <pre className="source">{data}</pre>;
+  return <ContentPreview kind={kind} data={state.data || ''} resource={resource} properties={properties} />;
 }
