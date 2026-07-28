@@ -28,6 +28,10 @@ when the app is loaded through Qortium Home.
   images.
 - Browse the individual files of a multi-file resource, with a deep-linkable
   route per file (`#/detail/{service}/{name}/{identifier}/file/{path}`).
+- View a published Git repository (bare or worktree layout) as a repository:
+  current branch, latest commit, and the file tree at that commit, with safe
+  in-app previews of each file's blob. All Git parsing is read-only and
+  bounded; unreadable repositories fall back to the plain published-file view.
 - Follow the current Qortium UI style, theme, and locale; the app includes 23
   locale catalogs.
 

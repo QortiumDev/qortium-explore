@@ -1,6 +1,6 @@
 {
   "name": "qortium-explore",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "private": true,
   "license": "0BSD",
   "description": "Browse, search, inspect, and open public Qortium QDN resources.",
@@ -8,12 +8,15 @@
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "dev": "vite",
+    "postinstall": "node scripts/patch-isomorphic-git.mjs",
     "preview": "vite preview",
     "qdn:publish": "node scripts/publish-qdn.mjs",
     "test": "vitest run"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.2",
+    "buffer": "^6.0.3",
+    "isomorphic-git": "^1.40.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "typescript": "^6.0.3",
