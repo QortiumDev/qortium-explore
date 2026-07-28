@@ -26,6 +26,8 @@ when the app is loaded through Qortium Home.
 - Open apps, websites, media, and documents through the appropriate Home
   action, with safe internal viewers for text, Markdown, code, CSV, JSON, and
   images.
+- Browse the individual files of a multi-file resource, with a deep-linkable
+  route per file (`#/detail/{service}/{name}/{identifier}/file/{path}`).
 - Follow the current Qortium UI style, theme, and locale; the app includes 23
   locale catalogs.
 

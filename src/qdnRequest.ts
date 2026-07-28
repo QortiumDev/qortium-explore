@@ -35,12 +35,13 @@ function resourcesPath(request: QdnRequest, base: string) {
   for (const [from, to] of Object.entries(fields)) queryValue(params, to, request[from]);
   return `${base}${params.size ? `?${params}` : ''}`;
 }
-function resourcePath(request: QdnRequest, kind: 'fetch' | 'metadata' | 'properties' | 'status') {
+export function resourcePath(request: QdnRequest, kind: 'fetch' | 'metadata' | 'properties' | 'status') {
   const resource = resourceRequest(request), identifier = resource.identifier || 'default';
   if (kind === 'metadata') return `/arbitrary/metadata/${resource.service}/${encodeURIComponent(resource.name)}/${encodeURIComponent(identifier)}`;
   if (kind === 'properties') return `/arbitrary/resource/properties/${resource.service}/${encodeURIComponent(resource.name)}/${encodeURIComponent(identifier)}`;
   if (kind === 'status') return `/arbitrary/resource/status/${resource.service}/${encodeURIComponent(resource.name)}${resource.identifier ? `/${encodeURIComponent(resource.identifier)}` : ''}`;
   const params = new URLSearchParams(); if (resource.path) params.set('filepath', resource.path);
+  if (str(request.encoding).toLowerCase() === 'base64') params.set('encoding', 'base64');
   return `/arbitrary/${resource.service}/${encodeURIComponent(resource.name)}${resource.identifier ? `/${encodeURIComponent(resource.identifier)}` : ''}${params.size ? `?${params}` : ''}`;
 }
 function parse(body: string, type: string): unknown { try { return type.includes('json') || /^[\s\r\n]*[\[{]/.test(body) ? JSON.parse(body) : body; } catch { return body; } }
