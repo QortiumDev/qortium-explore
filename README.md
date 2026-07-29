@@ -23,9 +23,13 @@ when the app is loaded through Qortium Home.
 - Browse QDN services, names, and resources through deep-linkable routes.
 - Search public QDN metadata with an optional service filter.
 - Inspect resource metadata, status, and properties.
-- Open apps, websites, media, and documents through the appropriate Home
-  action, with safe internal viewers for text, Markdown, code, CSV, JSON, and
-  images.
+- Feature-detect Home's generic QDN resource viewer and use it for public
+  non-browser resources, while keeping APP/WEBSITE/GAME on Home's navigation
+  path and retaining the older media/document actions as compatibility
+  fallbacks.
+- Use Home-provided ranged URLs for lazy inline image, audio, and video
+  previews. On older Home versions, bounded image/text previews and the
+  existing Open actions continue to work.
 - Browse the individual files of a multi-file resource, with a deep-linkable
   route per file (`#/detail/{service}/{name}/{identifier}/file/{path}`).
 - View a published Git repository (bare or worktree layout) as a repository:

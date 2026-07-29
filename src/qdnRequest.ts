@@ -1,9 +1,11 @@
+import { canStreamResource, GET_QDN_RESOURCE_STREAM_URL } from './resourceBridge';
+
 const DEFAULT_NODE_API_URL = 'http://127.0.0.1:24891';
 
 export const LOCAL_READ_ACTIONS = [
   'FETCH_NODE_API', 'FETCH_QDN_RESOURCE', 'GET_NODE_STATUS', 'IS_USING_PUBLIC_NODE', 'LIST_QDN_RESOURCES',
   'SEARCH_QDN_RESOURCES', 'GET_QDN_RESOURCE_METADATA', 'GET_QDN_RESOURCE_PROPERTIES', 'GET_QDN_RESOURCE_STATUS',
-  'SHOW_ACTIONS', 'WHICH_UI',
+  GET_QDN_RESOURCE_STREAM_URL, 'SHOW_ACTIONS', 'WHICH_UI',
 ] as const;
 
 export type QdnRequest = { action: string; maxBytes?: number; method?: string; path?: string; [key: string]: unknown };
@@ -44,6 +46,16 @@ export function resourcePath(request: QdnRequest, kind: 'fetch' | 'metadata' | '
   if (str(request.encoding).toLowerCase() === 'base64') params.set('encoding', 'base64');
   return `/arbitrary/${resource.service}/${encodeURIComponent(resource.name)}${resource.identifier ? `/${encodeURIComponent(resource.identifier)}` : ''}${params.size ? `?${params}` : ''}`;
 }
+export function resourceRenderPath(request: QdnRequest) {
+  const resource = resourceRequest(request);
+  if (!canStreamResource(resource)) throw new Error('This QDN service does not support inline streaming.');
+  const queryIndex = resource.path.indexOf('?');
+  const pathOnly = queryIndex === -1 ? resource.path : resource.path.slice(0, queryIndex);
+  const query = queryIndex === -1 ? '' : resource.path.slice(queryIndex + 1);
+  const encodedPath = pathOnly.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+  const queryString = new URLSearchParams(query).toString();
+  return `/render/${resource.service}/${encodeURIComponent(resource.name)}${resource.identifier ? `/${encodeURIComponent(resource.identifier)}` : ''}${encodedPath ? `/${encodedPath}` : ''}${queryString ? `?${queryString}` : ''}`;
+}
 function parse(body: string, type: string): unknown { try { return type.includes('json') || /^[\s\r\n]*[\[{]/.test(body) ? JSON.parse(body) : body; } catch { return body; } }
 async function localData(request: QdnRequest, path: string) {
   const method = sanitizeReadMethod(request.method); const response = await fetch(`${getNodeApiUrl()}${sanitizeNodePath(path)}`, { method });
@@ -59,6 +71,13 @@ async function fallback<T>(request: QdnRequest): Promise<T> {
     case 'GET_QDN_RESOURCE_METADATA': return localData(request, resourcePath(request, 'metadata')) as Promise<T>;
     case 'GET_QDN_RESOURCE_PROPERTIES': return localData(request, resourcePath(request, 'properties')) as Promise<T>;
     case 'GET_QDN_RESOURCE_STATUS': return localData(request, resourcePath(request, 'status')) as Promise<T>;
+    case GET_QDN_RESOURCE_STREAM_URL: {
+      const status = await localData(request, resourcePath(request, 'status'));
+      if (!status || typeof status !== 'object' || !('status' in status) || status.status === 'NOT_PUBLISHED') {
+        throw new Error('Resource does not exist.');
+      }
+      return `${getNodeApiUrl()}${resourceRenderPath(request)}` as T;
+    }
     case 'GET_NODE_STATUS': return localData(request, '/admin/status') as Promise<T>;
     case 'LIST_QDN_RESOURCES': return localData(request, resourcesPath(request, '/arbitrary/resources')) as Promise<T>;
     case 'SEARCH_QDN_RESOURCES': return localData(request, resourcesPath(request, '/arbitrary/resources/search')) as Promise<T>;

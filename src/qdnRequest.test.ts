@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resourcePath, sanitizeNodePath, sanitizeReadMethod } from './qdnRequest';
+import { LOCAL_READ_ACTIONS, resourcePath, resourceRenderPath, sanitizeNodePath, sanitizeReadMethod } from './qdnRequest';
 describe('qdn request sanitizers', () => {
   it('requires a safe absolute node path', () => {
     expect(() => sanitizeNodePath('admin/status')).toThrow();
@@ -15,5 +15,20 @@ describe('qdn request sanitizers', () => {
   it('allows only GET and HEAD', () => {
     expect(sanitizeReadMethod()).toBe('GET'); expect(sanitizeReadMethod(' head ')).toBe('HEAD');
     expect(() => sanitizeReadMethod('POST')).toThrow('Only GET and HEAD');
+  });
+  it('advertises and builds local ranged render URLs for browser development', () => {
+    expect(LOCAL_READ_ACTIONS).toContain('GET_QDN_RESOURCE_STREAM_URL');
+    expect(resourceRenderPath({
+      action: 'GET_QDN_RESOURCE_STREAM_URL',
+      service: 'file',
+      name: 'Alice Example',
+      identifier: 'clip',
+      path: 'media/demo one.mp4?download=false',
+    })).toBe('/render/FILE/Alice%20Example/clip/media/demo%20one.mp4?download=false');
+    expect(() => resourceRenderPath({
+      action: 'GET_QDN_RESOURCE_STREAM_URL',
+      service: 'JSON',
+      name: 'Alice',
+    })).toThrow('does not support inline streaming');
   });
 });
