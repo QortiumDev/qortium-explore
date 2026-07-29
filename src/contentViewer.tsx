@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { previewCache, previewCacheKey } from './previewCache';
 import { qdnRequest } from './qdnRequest';
 import { resourceFetchRequest } from './resourceFiles';
 import type { QdnResource } from './types';
@@ -43,8 +44,8 @@ function csvRows(text: string) { return text.split(/\r?\n/).filter(Boolean).map(
  * text for every other kind, matching what ContentViewer fetches; the Git
  * viewer feeds it bytes it read out of a repository instead.
  */
-export function ContentPreview({ kind, data, resource, properties }: { kind: ContentKind; data: string; resource: QdnResource; properties?: Record<string, unknown> }) {
-  if (kind === 'binary') return <p className="viewer-note">This resource cannot be rendered safely in Explore. Use Download to save its original bytes.</p>;
+export function ContentPreview({ kind, data, resource, properties, binaryMessage }: { kind: ContentKind; data: string; resource: QdnResource; properties?: Record<string, unknown>; binaryMessage?: string }) {
+  if (kind === 'binary') return <p className="viewer-note">{binaryMessage || 'This resource cannot be rendered safely in Explore. Use Download to save its original bytes.'}</p>;
   if (kind === 'image') return <img className="content-image" alt={filename(resource, properties)} src={`data:${imageMimeType(resource, properties)};base64,${data}`} />;
   if (kind === 'json') { try { return <pre className="source">{JSON.stringify(JSON.parse(data), null, 2)}</pre>; } catch { return <pre className="source">{data}</pre>; } }
   if (kind === 'csv') { const rows = csvRows(data); return <div className="table-scroll"><table className="csv"><tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => i === 0 ? <th key={j}>{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table></div>; }
@@ -52,17 +53,24 @@ export function ContentPreview({ kind, data, resource, properties }: { kind: Con
   return <pre className="source">{data}</pre>;
 }
 
-export function ContentViewer({ resource, properties }: { resource: QdnResource; properties?: Record<string, unknown> }) {
+export function ContentViewer({ resource, properties, binaryMessage }: { resource: QdnResource; properties?: Record<string, unknown>; binaryMessage?: string }) {
   const [state, setState] = useState<{ data?: string; error?: string; loading: boolean }>({ loading: true });
   const kind = classifyContent(resource, properties);
+  const cacheKey = previewCacheKey(resource, kind);
   useEffect(() => {
     if (kind === 'binary') { setState({ loading: false }); return; }
+    const cached = previewCache.get(cacheKey);
+    if (cached !== undefined) { setState({ data: cached, loading: false }); return; }
     let active = true;
     setState({ loading: true });
-    void qdnRequest<unknown>(resourceFetchRequest(resource, { binary: kind === 'image', maxBytes: CONTENT_MAX_BYTES })).then(data => { if (active) setState({ data: toText(data), loading: false }); }).catch(error => { if (active) setState({ error: error instanceof Error ? error.message : 'Unable to fetch content.', loading: false }); });
+    void qdnRequest<unknown>(resourceFetchRequest(resource, { binary: kind === 'image', maxBytes: CONTENT_MAX_BYTES })).then(data => {
+      const text = toText(data);
+      previewCache.set(cacheKey, text);
+      if (active) setState({ data: text, loading: false });
+    }).catch(error => { if (active) setState({ error: error instanceof Error ? error.message : 'Unable to fetch content.', loading: false }); });
     return () => { active = false; };
-  }, [kind, resource.identifier, resource.name, resource.path, resource.service]);
-  if (kind === 'binary') return <ContentPreview kind={kind} data="" resource={resource} properties={properties} />;
+  }, [cacheKey, kind, resource.identifier, resource.name, resource.path, resource.service]);
+  if (kind === 'binary') return <ContentPreview kind={kind} data="" resource={resource} properties={properties} binaryMessage={binaryMessage} />;
   if (state.loading) return <p className="loading">Loading preview…</p>;
   if (state.error) return <p className="error">{state.error}</p>;
   return <ContentPreview kind={kind} data={state.data || ''} resource={resource} properties={properties} />;

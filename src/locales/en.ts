@@ -11,6 +11,7 @@ export const EN_STRINGS = {
   'label.status': 'Status', 'label.title': 'Title', 'label.type': 'Type', 'label.unknown': 'Unknown', 'loading': 'Loading…',
   'search.help': 'Search titles, descriptions, and resource fields across public QDN.', 'thumbnail.placeholder': 'Preview unavailable',
   'viewer.download': 'Download resource', 'viewer.binary': 'This resource cannot be rendered safely in Explore.',
-  'viewer.empty': 'This resource has no text content.', 'viewer.json': 'JSON', 'viewer.selectFile': 'Select a file to preview it here.', 'viewer.source': 'Source preview',
+  'viewer.empty': 'This resource has no text content.', 'viewer.json': 'JSON', 'viewer.openInHome': 'Use Open to preview this resource in Home’s built-in viewer, or Download to save its original bytes.',
+  'viewer.preview': 'Preview', 'viewer.selectFile': 'Select a file to preview it here.', 'viewer.source': 'Source preview',
   'preview.canceled': 'File selection was canceled.', 'preview.choosing': 'Choosing file…', 'preview.opened': 'Preview opened in Home.',
 } as const;
