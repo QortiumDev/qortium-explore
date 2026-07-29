@@ -12,6 +12,7 @@ import {
   canStreamResource,
   resourceBridgeCapabilities,
   resourceStreamRequest,
+  safeQdnStreamUrl,
   type ResourceBridgeCapabilities,
 } from './resourceBridge';
 import { loadResourceDetails } from './resourceDetails';
@@ -40,10 +41,9 @@ function Thumbnail({ resource, streamUrlSupported }: { resource: QdnResource; st
       if (streamUrlSupported && canStreamResource(resource)) {
         try {
           const streamUrl = await qdnRequest<unknown>(resourceStreamRequest(resource));
-          if (typeof streamUrl === 'string' && streamUrl) {
-            if (active) setSrc(streamUrl);
-            return;
-          }
+          const safeStreamUrl = safeQdnStreamUrl(streamUrl);
+          if (active) setSrc(safeStreamUrl);
+          return;
         } catch {
           // A newly advertised stream URL can still fail transiently. Retain
           // Explore's bounded base64 thumbnail path as the compatibility fallback.

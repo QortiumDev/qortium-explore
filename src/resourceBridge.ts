@@ -54,3 +54,17 @@ export function resourceStreamRequest(
     ...(hints.mimeType ? { mimeType: hints.mimeType } : {}),
   };
 }
+
+export function safeQdnStreamUrl(value: unknown) {
+  if (typeof value !== 'string' || !value) {
+    throw new Error('Home did not return a media URL.');
+  }
+
+  const url = new URL(value);
+
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+    throw new Error('Home returned an unsafe media URL.');
+  }
+
+  return url.toString();
+}

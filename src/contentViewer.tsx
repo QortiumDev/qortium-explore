@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { previewCache, previewCacheKey } from './previewCache';
 import { qdnRequest } from './qdnRequest';
-import { canStreamResource, resourceStreamRequest } from './resourceBridge';
+import { canStreamResource, resourceStreamRequest, safeQdnStreamUrl } from './resourceBridge';
 import { resourceFetchRequest } from './resourceFiles';
 import type { QdnResource } from './types';
 
@@ -69,8 +69,7 @@ function StreamedContent({ kind, resource, properties }: { kind: 'audio' | 'imag
       mimeType: knownMimeType,
     })).then((value) => {
       if (!active) return;
-      if (typeof value !== 'string' || !value) throw new Error('Home did not return a media URL.');
-      setState({ loading: false, url: value });
+      setState({ loading: false, url: safeQdnStreamUrl(value) });
     }).catch((error) => {
       if (active) setState({
         error: error instanceof Error ? error.message : 'Unable to open the media stream.',

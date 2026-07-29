@@ -5,6 +5,7 @@ import {
   OPEN_QDN_RESOURCE_VIEWER,
   resourceBridgeCapabilities,
   resourceStreamRequest,
+  safeQdnStreamUrl,
 } from './resourceBridge';
 
 describe('Home resource bridge capabilities', () => {
@@ -65,5 +66,21 @@ describe('Home resource bridge capabilities', () => {
       filename: 'demo.mp4',
       mimeType: 'video/mp4',
     });
+  });
+
+  it('accepts only credential-free HTTP(S) stream URLs', () => {
+    expect(safeQdnStreamUrl('https://node.example/render/VIDEO/Alice/clip')).toBe(
+      'https://node.example/render/VIDEO/Alice/clip',
+    );
+    expect(safeQdnStreamUrl('http://127.0.0.1:24891/render/AUDIO/Alice/clip')).toBe(
+      'http://127.0.0.1:24891/render/AUDIO/Alice/clip',
+    );
+    expect(() => safeQdnStreamUrl('javascript:alert(1)')).toThrow('unsafe media URL');
+    expect(() => safeQdnStreamUrl('data:text/html,<script>alert(1)</script>')).toThrow('unsafe media URL');
+    expect(() => safeQdnStreamUrl('https://user:secret@node.example/render/IMAGE/Alice/clip')).toThrow(
+      'unsafe media URL',
+    );
+    expect(() => safeQdnStreamUrl('/render/IMAGE/Alice/clip')).toThrow();
+    expect(() => safeQdnStreamUrl(null)).toThrow('did not return a media URL');
   });
 });
