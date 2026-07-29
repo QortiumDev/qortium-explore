@@ -37,12 +37,18 @@ function Thumbnail({ resource, streamUrlSupported }: { resource: QdnResource; st
   useEffect(() => {
     if (!mayFetchThumbnail(resource) || streamUrlSupported === null) return;
     let active = true;
+    let objectUrl: string | undefined;
     const load = async () => {
       if (streamUrlSupported && canStreamResource(resource)) {
         try {
           const streamUrl = await qdnRequest<unknown>(resourceStreamRequest(resource));
           const safeStreamUrl = safeQdnStreamUrl(streamUrl);
-          if (active) setSrc(safeStreamUrl);
+          const response = await fetch(safeStreamUrl);
+          if (!response.ok) throw new Error(`Thumbnail request failed with HTTP ${response.status}.`);
+          const blob = await response.blob();
+          if (!blob.type.startsWith('image/')) throw new Error('Thumbnail response was not an image.');
+          objectUrl = URL.createObjectURL(blob);
+          if (active) setSrc(objectUrl);
           return;
         } catch {
           // A newly advertised stream URL can still fail transiently. Retain
@@ -53,7 +59,10 @@ function Thumbnail({ resource, streamUrlSupported }: { resource: QdnResource; st
       if (active && typeof data === 'string') setSrc(`data:image/*;base64,${data}`);
     };
     void load().catch(() => undefined);
-    return () => { active = false; };
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [resource.identifier, resource.name, resource.path, resource.service, resource.size, streamUrlSupported]);
   return src ? <img className="thumbnail" alt="" decoding="async" loading="lazy" src={src} /> : <span className="thumbnail thumbnail--placeholder" aria-label="Preview unavailable">▧</span>;
 }

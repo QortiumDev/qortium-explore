@@ -63,20 +63,39 @@ function StreamedContent({ kind, resource, properties }: { kind: 'audio' | 'imag
 
   useEffect(() => {
     let active = true;
+    let objectUrl: string | undefined;
+    const abortController = new AbortController();
     setState({ loading: true });
-    void qdnRequest<unknown>(resourceStreamRequest(resource, {
-      filename: knownFilename,
-      mimeType: knownMimeType,
-    })).then((value) => {
-      if (!active) return;
-      setState({ loading: false, url: safeQdnStreamUrl(value) });
-    }).catch((error) => {
-      if (active) setState({
+    const load = async () => {
+      const value = await qdnRequest<unknown>(resourceStreamRequest(resource, {
+        filename: knownFilename,
+        mimeType: knownMimeType,
+      }));
+      const safeStreamUrl = safeQdnStreamUrl(value);
+
+      if (kind === 'image') {
+        const response = await fetch(safeStreamUrl, { signal: abortController.signal });
+        if (!response.ok) throw new Error(`Image request failed with HTTP ${response.status}.`);
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) throw new Error('Image response did not contain an image.');
+        objectUrl = URL.createObjectURL(blob);
+        if (active) setState({ loading: false, url: objectUrl });
+        return;
+      }
+
+      if (active) setState({ loading: false, url: safeStreamUrl });
+    };
+    void load().catch((error) => {
+      if (active && !abortController.signal.aborted) setState({
         error: error instanceof Error ? error.message : 'Unable to open the media stream.',
         loading: false,
       });
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      abortController.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [knownFilename, knownMimeType, resource.identifier, resource.name, resource.path, resource.service]);
 
   if (state.loading) return <p className="loading">Loading preview…</p>;
