@@ -17,7 +17,7 @@ import { resourceFetchRequest, resourceFiles } from './resourceFiles';
 import { isBrowserArchiveService, PUBLIC_QDN_SERVICES } from './services';
 import { sortRows, type Sort, updatedOf } from './sort';
 import { previewQdnPublishSource, supportsSourcePreview } from './sourcePreview';
-import { mayFetchThumbnail, THUMBNAIL_MAX_BYTES } from './thumbnail';
+import { decodeThumbnailBytes, mayFetchThumbnail, THUMBNAIL_MAX_BYTES } from './thumbnail';
 import type { QdnResource, ResourceDetails } from './types';
 
 type Folder = { count: number; name: string; updated: number };
@@ -31,7 +31,19 @@ function resourceQuery(route: ExploreRoute) { if (route.kind === 'services') ret
 
 function Thumbnail({ resource }: { resource: QdnResource }) {
   const [src, setSrc] = useState<string>();
-  useEffect(() => { if (!mayFetchThumbnail(resource)) return; let active = true; void qdnRequest<unknown>(resourceFetchRequest(resource, { binary: true, maxBytes: THUMBNAIL_MAX_BYTES })).then(data => { if (active && typeof data === 'string') setSrc(`data:image/*;base64,${data}`); }).catch(() => undefined); return () => { active = false; }; }, [resource.identifier, resource.name, resource.path, resource.service, resource.size]);
+  useEffect(() => {
+    if (!mayFetchThumbnail(resource)) return;
+    let active = true;
+    let objectUrl: string | undefined;
+    void qdnRequest<unknown>(resourceFetchRequest(resource, { binary: true, maxBytes: THUMBNAIL_MAX_BYTES })).then(data => {
+      if (!active || typeof data !== 'string') return;
+      const decoded = decodeThumbnailBytes(data);
+      if (!decoded) return;
+      objectUrl = URL.createObjectURL(new Blob([decoded]));
+      setSrc(objectUrl);
+    }).catch(() => undefined);
+    return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [resource.identifier, resource.name, resource.path, resource.service, resource.size]);
   return src ? <img className="thumbnail" alt="" src={src} /> : <span className="thumbnail thumbnail--placeholder" aria-label="Preview unavailable">▧</span>;
 }
 function SortButton({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) { return <button className="sort" type="button" onClick={onClick}>{children}{active ? ' ↕' : ''}</button>; }
