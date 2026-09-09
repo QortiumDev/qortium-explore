@@ -12,7 +12,7 @@ export type SourcePreviewResult =
   | { kind: 'canceled' }
   | { kind: 'opened'; source: SelectedQdnPublishSource };
 
-const SOURCE_PREVIEW_ACTIONS = new Set([
+export const SOURCE_PREVIEW_ACTIONS = new Set([
   'SELECT_QDN_PUBLISH_SOURCE',
   'PREVIEW_QDN_PUBLISH_SOURCE',
 ]);

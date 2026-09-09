@@ -1,5 +1,5 @@
-const MAX_ENTRIES = 12;
-const MAX_BYTES = 24 * 1024 * 1024;
+export const MAX_ENTRIES = 12;
+export const MAX_BYTES = 24 * 1024 * 1024;
 
 type PreviewEntry = { data: string; size: number };
 

@@ -1,10 +1,10 @@
 import type { PromiseFsClient, ReadCommitResult } from 'isomorphic-git';
 
 const VIRTUAL_ROOT = '/repo';
-const MAX_REPOSITORY_PATHS = 10_000;
-const MAX_PATH_BYTES = 1_024;
-const MAX_GIT_FILE_BYTES = 16 * 1024 * 1024;
-const MAX_CACHED_BYTES = 100 * 1024 * 1024;
+export const MAX_REPOSITORY_PATHS = 10_000;
+export const MAX_PATH_BYTES = 1_024;
+export const MAX_GIT_FILE_BYTES = 16 * 1024 * 1024;
+export const MAX_CACHED_BYTES = 100 * 1024 * 1024;
 const MAX_COMMIT_MESSAGE_CHARS = 10_000;
 const MAX_COMMIT_SUMMARY_CHARS = 240;
 const MAX_AUTHOR_CHARS = 240;

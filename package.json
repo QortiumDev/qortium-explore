@@ -1,6 +1,6 @@
 {
   "name": "qortium-explore",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "private": true,
   "license": "0BSD",
   "description": "Browse, search, inspect, and open public Qortium QDN resources.",
@@ -26,6 +26,7 @@
     "@types/node": "^25.9.5",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "jsdom": "^29.1.1",
     "vitest": "^4.1.10"
   }
 }

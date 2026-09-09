@@ -1,4 +1,5 @@
 export const EN_STRINGS = {
+  'workspace.browse': 'Browse', 'workspace.developers': 'Developers',
   'app.title': 'Explore', 'app.subtitle': 'Browse public Qortium QDN resources.', 'action.back': 'Back', 'action.download': 'Download',
   'action.allFiles': 'All files', 'action.open': 'Open', 'action.openNewTab': 'Open in new tab', 'action.preview': 'Preview local file', 'action.previewFolder': 'Preview local folder', 'action.refresh': 'Refresh', 'action.retry': 'Retry',
   'action.search': 'Search', 'action.view': 'View', 'column.count': 'Count', 'column.identifier': 'Identifier',
