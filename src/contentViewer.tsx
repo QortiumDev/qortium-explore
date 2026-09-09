@@ -40,6 +40,14 @@ export function imageMimeType(resource: QdnResource, properties?: Record<string,
   return /^image\//.test(declared) ? declared : 'image/*';
 }
 
+export const STREAM_IMAGE_MIME_TYPES = ['image/avif', 'image/bmp', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'] as const;
+/** Home's stream capability permits raster images; SVG/unknown types use bounded reads. */
+export function shouldStreamContent(resource: QdnResource, properties?: Record<string, unknown>) {
+  const kind = classifyContent(resource, properties);
+  return canStreamResource(resource) && (kind === 'audio' || kind === 'video' ||
+    (kind === 'image' && STREAM_IMAGE_MIME_TYPES.includes(imageMimeType(resource, properties) as typeof STREAM_IMAGE_MIME_TYPES[number])));
+}
+
 function csvRows(text: string) { return text.split(/\r?\n/).filter(Boolean).map(row => row.split(',').map(value => value.trim().replace(/^"|"$/g, ''))); }
 
 /**
@@ -108,7 +116,7 @@ function StreamedContent({ kind, resource, properties }: { kind: 'audio' | 'imag
 export function ContentViewer({ resource, properties, binaryMessage, streamUrlSupported = null }: { resource: QdnResource; properties?: Record<string, unknown>; binaryMessage?: string; streamUrlSupported?: boolean | null }) {
   const [state, setState] = useState<{ data?: string; error?: string; loading: boolean }>({ loading: true });
   const kind = classifyContent(resource, properties);
-  const streamableContent = canStreamResource(resource) && ['audio', 'image', 'video'].includes(kind);
+  const streamableContent = shouldStreamContent(resource, properties);
   const awaitingStreamCapability = streamUrlSupported === null && streamableContent;
   const useStreamUrl = streamUrlSupported === true && streamableContent;
   const cacheKey = previewCacheKey(resource, kind);

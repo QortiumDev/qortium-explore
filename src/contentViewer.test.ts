@@ -29,3 +29,16 @@ describe('content viewer media classification', () => {
     expect(classifyContent(resource('FILES', 'README.md'), { mimeType: 'video/mp4' })).toBe('markdown');
   });
 });
+
+
+describe('Home 2 raster stream eligibility', () => {
+  it('keeps SVG and unknown images on the bounded reader and streams known raster/media types', async () => {
+    const { shouldStreamContent } = await import('./contentViewer');
+    expect(shouldStreamContent({ service: 'IMAGE', name: 'Example' }, { filename: 'image.svg', mimeType: 'image/svg+xml' })).toBe(false);
+    expect(shouldStreamContent({ service: 'IMAGE', name: 'Example' })).toBe(false);
+    expect(shouldStreamContent({ service: 'IMAGE', name: 'Example' }, { filename: 'image.png' })).toBe(true);
+    expect(shouldStreamContent({ service: 'FILES', name: 'Example', path: 'image.svg' })).toBe(false);
+    expect(shouldStreamContent({ service: 'AUDIO', name: 'Example' })).toBe(true);
+    expect(shouldStreamContent({ service: 'VIDEO', name: 'Example' })).toBe(true);
+  });
+});

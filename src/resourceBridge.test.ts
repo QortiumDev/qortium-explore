@@ -68,7 +68,7 @@ describe('Home resource bridge capabilities', () => {
     });
   });
 
-  it('accepts only credential-free HTTP(S) stream URLs', () => {
+  it('accepts credential-free HTTP(S) stream URLs', () => {
     expect(safeQdnStreamUrl('https://node.example/render/VIDEO/Alice/clip')).toBe(
       'https://node.example/render/VIDEO/Alice/clip',
     );
@@ -83,4 +83,23 @@ describe('Home resource bridge capabilities', () => {
     expect(() => safeQdnStreamUrl('/render/IMAGE/Alice/clip')).toThrow();
     expect(() => safeQdnStreamUrl(null)).toThrow('did not return a media URL');
   });
+  it('accepts an exact Home 2 desktop stream capability unchanged', () => {
+    const capability = 'qortium-home-resource://stream/12345678-1234-4123-8123-123456789abc';
+    expect(safeQdnStreamUrl(capability)).toBe(capability);
+  });
+  it.each([
+    'qortium-home-resource://other/12345678-1234-4123-8123-123456789abc',
+    'qortium-home-resource://stream/not-a-token',
+    'qortium-home-resource://stream/12345678-1234-4123-8123-123456789abc?redirect=https://example.com',
+    'qortium-home-resource://stream/12345678-1234-4123-8123-123456789abc#fragment',
+    'qortium-home-resource://user@stream/12345678-1234-4123-8123-123456789abc',
+    'qortium-home-resource://stream:123/12345678-1234-4123-8123-123456789abc',
+    'qortium-home-resource://stream/../12345678-1234-4123-8123-123456789abc',
+    'qortium-home-resource://stream/12345678-1234-4123-8123-123456789abc/extra',
+    'qortium-home-resource://stream/12345678-1234-4123-8123-123456789abc\n',
+    'file:///tmp/video.mp4', 'blob:https://example.com/untrusted',
+  ])('rejects unsupported or malformed capability %s', value => {
+    expect(() => safeQdnStreamUrl(value)).toThrow();
+  });
+
 });

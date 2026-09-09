@@ -60,6 +60,10 @@ export function safeQdnStreamUrl(value: unknown) {
     throw new Error('Home did not return a media URL.');
   }
 
+  // Home 2 desktop issues an opaque, app/session-bound capability. Keep its
+  // exact URL intact; Home validates expiry, binding and access on each read.
+  if (/^qortium-home-resource:\/\/stream\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) && value === value.trim()) return value;
+
   const url = new URL(value);
 
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {

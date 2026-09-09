@@ -60,3 +60,31 @@ override for an operator who has independently accepted that risk.
 ## License
 
 [0BSD](LICENSE)
+
+## Developers reference
+
+Explore 1.4.12 adds a public English/LTR Developers workspace at
+`qdn://APP/Explore/Explore?view=developers`. The `developer` and `reference`
+aliases normalize to `developers`. Browse/detail/file hashes, repeated host
+query parameters and browser history are preserved. Switching workspaces keeps
+the browser subtree mounted, including search and Git selections.
+
+The reference documents discovery, resource identity and metadata, bounded
+file/Git reads, cache freshness, viewer/media fallbacks, and local-source
+preview tokens. Examples share request builders and limits with the app and
+copy without executing. Local preview is distinct from QDN publication.
+
+Classic/Modern/Fun, theme, accent, language and text-size messages now apply to
+both workspaces. New navigation labels use the existing English-fallback locale
+catalog; the reference body remains English. Explore retains its Qortium-only
+resource-browser scope with no new Qortal integration.
+
+Home 2 desktop media URLs now accept the host’s exact
+`qortium-home-resource://stream/UUID` capability shape, alongside existing
+credential-free HTTP(S). Other schemes and malformed capabilities remain
+rejected. Home owns capability authorization and expiry; Explore preserves the
+returned capability unchanged. This fixes previews that previously reported
+“Home returned an unsafe media URL.”
+
+Known raster images use Home streaming; SVG and unknown image types use the
+existing bounded reader to respect Home’s stream MIME policy.
