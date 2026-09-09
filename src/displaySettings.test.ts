@@ -3,6 +3,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { applyDisplaySettings, getInitialDisplaySettings, TEXT_SCALES, updateFromHostMessage } from './displaySettings';
 afterEach(() => { history.replaceState(null, '', '/'); });
 describe('Home appearance', () => {
+  it('supports Home 2 clay on launch and live updates', () => {
+    history.replaceState(null, '', '/?accent=clay');
+    const initial = getInitialDisplaySettings();
+    expect(initial.accent).toBe('clay');
+    applyDisplaySettings(initial);
+    expect(document.documentElement.style.getPropertyValue('--accent-hue')).toBe('19');
+    expect(updateFromHostMessage({ action: 'ACCENT_CHANGED', accent: 'clay' }, { ...initial, accent: 'blue' })?.accent).toBe('clay');
+  });
   it('reads injected appearance and applies query overrides', () => {
     Object.assign(window, { _qdnTheme: 'dark', _qdnTextSize: 'huge', _qdnUiStyle: 'fun' });
     history.replaceState(null, '', '/?theme=light&lang=ar');

@@ -1,6 +1,6 @@
 import { isRtlLanguage, normalizeLanguage, type SupportedLanguage } from './i18n';
 export const TEXT_SCALES = { 'extra-small': .85, small: .925, medium: 1, large: 1.15, 'extra-large': 1.35, huge: 2.1 } as const;
-const accents = { green: 155, blue: 215, orange: 28, purple: 275, red: 0, teal: 175, cyan: 190, pink: 330, yellow: 48 } as const;
+const accents = { clay: 19, green: 155, blue: 215, orange: 28, purple: 275, red: 0, teal: 175, cyan: 190, pink: 330, yellow: 48 } as const;
 export type QdnTheme = 'light' | 'dark';
 export type QdnUiStyle = 'classic' | 'modern' | 'fun';
 export type QdnDisplaySettings = { language: SupportedLanguage; theme: QdnTheme; uiStyle: QdnUiStyle; textSize: keyof typeof TEXT_SCALES; accent: keyof typeof accents };
